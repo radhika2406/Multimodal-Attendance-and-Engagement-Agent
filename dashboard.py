@@ -1,6 +1,5 @@
 
 from pathlib import Path
-import time
 
 import pandas as pd
 import plotly.express as px
@@ -13,7 +12,7 @@ import streamlit as st
 # =========================================================
 
 st.set_page_config(
-    page_title="NeuraClass | AI Classroom",
+    page_title="LearnMate | AI Classroom",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -37,7 +36,6 @@ def ensure_demo_data():
         return
 
     rows = [
-        # Session 1
         ["DEMO-001", "P0001", "Present", 1780,
          "2026-10-16T09:00:00", "2026-10-16T09:30:00"],
         ["DEMO-001", "P0002", "Present", 1650,
@@ -46,8 +44,6 @@ def ensure_demo_data():
          "2026-10-16T09:00:00", "2026-10-16T09:30:00"],
         ["DEMO-001", "P0004", "Pending", 300,
          "2026-10-16T09:00:00", "2026-10-16T09:30:00"],
-
-        # Session 2
         ["DEMO-002", "P0001", "Present", 2100,
          "2026-10-18T10:00:00", "2026-10-18T10:35:00"],
         ["DEMO-002", "P0002", "Present", 1950,
@@ -56,8 +52,6 @@ def ensure_demo_data():
          "2026-10-18T10:00:00", "2026-10-18T10:35:00"],
         ["DEMO-002", "P0005", "Pending", 500,
          "2026-10-18T10:00:00", "2026-10-18T10:35:00"],
-
-        # Session 3
         ["DEMO-003", "P0001", "Present", 2400,
          "2026-10-19T11:00:00", "2026-10-19T11:40:00"],
         ["DEMO-003", "P0002", "Pending", 800,
@@ -132,93 +126,187 @@ def style_chart(fig):
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font_color="#DCE5FF",
+        font=dict(
+            family="Inter, sans-serif",
+            color="#453760",
+            size=12,
+        ),
         margin=dict(t=45, b=20, l=15, r=15),
         legend_title_text="",
+        xaxis=dict(
+            gridcolor="#eee9f5",
+            zerolinecolor="#e5def0",
+            color="#625a78",
+        ),
+        yaxis=dict(
+            gridcolor="#eee9f5",
+            zerolinecolor="#e5def0",
+            color="#625a78",
+        ),
     )
     return fig
 
 
 # =========================================================
-# DESIGN
+# DESIGN — LAVENDER, WHITE AND PURPLE
 # =========================================================
 
 st.markdown("""
 <style>
-@import url(
-'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
-);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --ink: #30294b;
+    --muted: #77728b;
+    --purple: #514078;
+    --lavender: #eeeafa;
+    --line: #e8e4f1;
+    --panel: #ffffff;
+}
 
 html, body, [class*="css"] {
     font-family: Inter, sans-serif;
 }
 
 .stApp {
-    background:
-      radial-gradient(ellipse at 20% 0%,
-      rgba(66, 85, 220, .15), transparent 38%),
-      #080D19;
-    color: #EDF2FF;
+    background: linear-gradient(
+        135deg,
+        #f3f0fa 0%,
+        #f8f7fc 48%,
+        #eeebf7 100%
+    );
+    color: var(--ink);
+}
+
+[data-testid="stHeader"] {
+    background: rgba(248, 247, 252, .88);
+}
+
+[data-testid="stMainBlockContainer"] {
+    padding-top: 1.4rem;
+    padding-bottom: 2rem;
 }
 
 [data-testid="stSidebar"] {
-    background: #0B1222;
-    border-right: 1px solid #202D48;
+    background: linear-gradient(
+        180deg,
+        #342752 0%,
+        #443568 62%,
+        #514078 100%
+    );
+    border-right: none;
 }
 
 [data-testid="stSidebar"] * {
-    color: #E2E8F0;
+    color: #f8f6ff;
 }
 
-h1, h2, h3 {
-    color: #F8FAFC;
-    letter-spacing: -.5px;
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+    color: #d6cfea;
 }
 
-p, label {
-    color: #AAB9D3;
+[data-testid="stSidebar"] hr {
+    border-color: rgba(255,255,255,.18);
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: .25rem;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border-radius: 11px;
+    padding: .48rem .65rem;
+    transition: background .15s ease;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: rgba(255,255,255,.12);
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+    background: #f4f1fc;
+    color: #443568;
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) * {
+    color: #443568;
+}
+
+h1, h2, h3, h4 {
+    color: #30294b;
+    letter-spacing: -.35px;
+}
+
+p, label, [data-testid="stCaptionContainer"] {
+    color: var(--muted);
+}
+
+[data-testid="stMarkdownContainer"] a {
+    color: #6552a0;
 }
 
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, #121F36, #101629);
-    border: 1px solid #263858;
-    padding: 18px;
-    border-radius: 16px;
+    background: #fff;
+    border: 1px solid #e8e2f2;
+    border-left: 4px solid #a99ad4;
+    padding: 17px 18px;
+    border-radius: 15px;
+    box-shadow: 0 5px 18px rgba(60, 43, 96, .055);
+}
+
+[data-testid="stHorizontalBlock"] [data-testid="stMetric"] {
+    min-height: 112px;
 }
 
 [data-testid="stMetricLabel"] {
-    color: #A5B4CF;
-}
-
-[data-testid="stMetricValue"] {
-    color: #FFFFFF;
-}
-
-.stButton > button {
-    min-height: 42px;
-    border-radius: 10px;
-    border: 1px solid #4157A3;
-    background: linear-gradient(110deg, #3558E8, #7654ED);
-    color: #FFFFFF;
+    color: #77728b;
     font-weight: 600;
 }
 
-.stButton > button:hover {
-    border-color: #A5B4FC;
-    color: white;
+[data-testid="stMetricValue"] {
+    color: #342752;
+    font-weight: 750;
+}
+
+[data-testid="stMetricDelta"] {
+    font-size: .8rem;
+}
+
+.stButton > button,
+[data-testid="stDownloadButton"] button {
+    min-height: 41px;
+    border-radius: 11px;
+    border: 1px solid #66539a;
+    background: linear-gradient(110deg, #514078, #7160a7);
+    color: #fff;
+    font-weight: 650;
+    box-shadow: 0 3px 9px rgba(81, 64, 120, .12);
+}
+
+.stButton > button:hover,
+[data-testid="stDownloadButton"] button:hover {
+    border-color: #8978bb;
+    background: #433361;
+    color: #fff;
+}
+
+.stButton > button:focus {
+    box-shadow: 0 0 0 .18rem rgba(113,96,167,.25);
 }
 
 .hero {
     padding: 27px 30px;
-    background: linear-gradient(115deg,
-        #13203B, #171833 68%, #22204B);
-    border: 1px solid #34446E;
-    border-radius: 20px;
+    background: linear-gradient(115deg, #ffffff 0%, #f5f2fc 100%);
+    border: 1px solid #e5def2;
+    border-left: 5px solid #8d7abb;
+    border-radius: 19px;
     margin-bottom: 22px;
+    box-shadow: 0 8px 25px rgba(62, 47, 96, .06);
 }
 
 .eyebrow {
-    color: #9DAEFF;
+    color: #7966a9;
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 2px;
@@ -228,40 +316,82 @@ p, label {
 .hero-title {
     font-size: 31px;
     font-weight: 800;
-    color: white;
+    color: #30294b;
     margin-top: 5px;
 }
 
 .hero-sub {
-    color: #B6C4DE;
+    color: #77728b;
     margin-top: 8px;
 }
 
 .panel {
-    background: #10182A;
-    border: 1px solid #263653;
-    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e8e2f2;
+    border-radius: 15px;
     padding: 18px;
+    box-shadow: 0 5px 18px rgba(60,43,96,.045);
 }
 
 .muted {
-    color: #899BB8;
+    color: #77728b;
     font-size: 13px;
 }
 
 hr {
-    border-color: #24324A;
+    border-color: #e8e2f2;
+}
+
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
+    border: 1px solid #e8e2f2;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+[data-testid="stDataFrame"] [role="columnheader"] {
+    background: #f1edf9;
+    color: #453760;
+}
+
+[data-testid="stAlert"] {
+    border-radius: 12px;
+}
+
+[data-testid="stPlotlyChart"] {
+    background: #fff;
+    border: 1px solid #ebe6f3;
+    border-radius: 15px;
+    padding: 8px;
+    box-shadow: 0 4px 16px rgba(60,43,96,.035);
+}
+
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div,
+[data-baseweb="textarea"] > div {
+    border-radius: 10px;
+    border-color: #ded7ec;
+}
+
+@media (max-width: 760px) {
+    .hero {
+        padding: 21px 20px;
+    }
+
+    .hero-title {
+        font-size: 25px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
 
 
 # =========================================================
-# SIDEBAR
+# SIDEBAR AND SESSION CONTROLS
 # =========================================================
 
 with st.sidebar:
-    st.markdown("## 🎓 NeuraClass")
+    st.markdown("## 🎓 LearnMate")
     st.caption("AI CLASSROOM INTELLIGENCE")
     st.divider()
 
@@ -305,7 +435,7 @@ with st.sidebar:
 real_history = load_real_history()
 demo_history = load_demo_history()
 
-# Never merge demo records into actual attendance history.
+# Keep illustrative demo data separate from real attendance.
 using_demo = real_history.empty
 
 if using_demo:
@@ -328,7 +458,7 @@ live_df = pd.DataFrame(participants)
 
 
 # =========================================================
-# HEADER
+# PAGE HEADER
 # =========================================================
 
 st.markdown("""
@@ -356,8 +486,6 @@ if using_demo:
 
 if page == "Overview":
     st.subheader("Classroom Overview")
-
-    duration_col = duration_column(live_df)
 
     present_count = 0
     if "status" in live_df.columns:
@@ -388,7 +516,9 @@ if page == "Overview":
 
         if not live_df.empty:
             st.dataframe(
-                live_df, use_container_width=True, hide_index=True
+                live_df,
+                use_container_width=True,
+                hide_index=True,
             )
         else:
             st.info(
@@ -399,8 +529,6 @@ if page == "Overview":
     with right:
         st.subheader("Attendance Status")
 
-        # Use live data if it has multiple categories.
-        # Otherwise use the selected history dataset.
         chart_source = live_df
         chart_is_demo = False
 
@@ -427,7 +555,10 @@ if page == "Overview":
                 values="Records",
                 hole=0.66,
                 color_discrete_sequence=[
-                    "#6D7CFF", "#A78BFA", "#38BDF8", "#F59E0B"
+                    "#7562A6",
+                    "#F2C94C",
+                    "#53B77A",
+                    "#E99595",
                 ],
             )
             fig.update_traces(
@@ -499,7 +630,8 @@ elif page == "Live Attendance":
         if current_duration:
             chart_data = filtered_live.copy()
             chart_data[current_duration] = pd.to_numeric(
-                chart_data[current_duration], errors="coerce"
+                chart_data[current_duration],
+                errors="coerce",
             )
 
             if "participant_id" in chart_data.columns:
@@ -555,7 +687,9 @@ elif page == "Session History":
             ]
 
         st.dataframe(
-            history_view, use_container_width=True, hide_index=True
+            history_view,
+            use_container_width=True,
+            hide_index=True,
         )
 
         st.download_button(
@@ -577,7 +711,7 @@ elif page == "Session History":
                 x="session_id",
                 y="Records",
                 title="Records by Session",
-                color_discrete_sequence=["#7C83FF"],
+                color_discrete_sequence=["#8D7ABB"],
             )
             style_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
@@ -603,20 +737,32 @@ elif page == "Engagement Analytics":
 
     if analytics.empty or not duration_col:
         st.info("No suitable duration data is available.")
+
     else:
         analytics[duration_col] = pd.to_numeric(
-            analytics[duration_col], errors="coerce"
+            analytics[duration_col],
+            errors="coerce",
         )
 
         if "participant_id" in analytics.columns:
-            summary = (
-                analytics.groupby("participant_id", as_index=False)
-                .agg(
-                    Sessions=("session_id", "nunique"),
-                    Average_Presence=(duration_col, "mean"),
-                    Total_Records=(duration_col, "count"),
+            if "session_id" in analytics.columns:
+                summary = (
+                    analytics.groupby("participant_id", as_index=False)
+                    .agg(
+                        Sessions=("session_id", "nunique"),
+                        Average_Presence=(duration_col, "mean"),
+                        Total_Records=(duration_col, "count"),
+                    )
                 )
-            )
+            else:
+                summary = (
+                    analytics.groupby("participant_id", as_index=False)
+                    .agg(
+                        Average_Presence=(duration_col, "mean"),
+                        Total_Records=(duration_col, "count"),
+                    )
+                )
+                summary["Sessions"] = summary["Total_Records"]
 
             summary["Average_Presence"] = (
                 summary["Average_Presence"].round(1)
@@ -624,7 +770,9 @@ elif page == "Engagement Analytics":
 
             st.subheader("Participant Comparison")
             st.dataframe(
-                summary, use_container_width=True, hide_index=True
+                summary,
+                use_container_width=True,
+                hide_index=True,
             )
 
             fig = px.bar(
@@ -638,12 +786,15 @@ elif page == "Engagement Analytics":
                     "Average_Presence": "Average Presence (seconds)",
                     "Sessions": "Sessions",
                 },
-                color_continuous_scale=["#6478FF", "#B18CFF"],
+                color_continuous_scale=["#B8AED9", "#65528F"],
             )
             style_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
 
-        if "session_id" in analytics.columns:
+        if (
+            "session_id" in analytics.columns
+            and not analytics.empty
+        ):
             trend = (
                 analytics.groupby("session_id", as_index=False)[duration_col]
                 .mean()
@@ -655,7 +806,7 @@ elif page == "Engagement Analytics":
                 y=duration_col,
                 markers=True,
                 title="Average Presence Across Sessions",
-                color_discrete_sequence=["#38BDF8"],
+                color_discrete_sequence=["#53B77A"],
             )
             style_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
@@ -703,11 +854,15 @@ elif page == "Instructor Insights":
             .reset_index(name="Records")
         )
         st.dataframe(
-            status_summary, use_container_width=True, hide_index=True
+            status_summary,
+            use_container_width=True,
+            hide_index=True,
         )
 
     if using_demo:
-        st.caption("Any historical figures shown here are illustrative demo data.")
+        st.caption(
+            "Any historical figures shown here are illustrative demo data."
+        )
 
 
 # =========================================================
@@ -726,6 +881,7 @@ elif page == "Student Summary":
 
     if student_data.empty or "participant_id" not in student_data.columns:
         st.info("No participant history is available.")
+
     else:
         student_ids = sorted(
             student_data["participant_id"].dropna().astype(str).unique()
@@ -736,7 +892,6 @@ elif page == "Student Summary":
             student_ids,
         )
 
-        # Define the filtered DataFrame before using it.
         student_df = student_data[
             student_data["participant_id"].astype(str) == chosen_id
         ].copy()
@@ -764,7 +919,8 @@ elif page == "Student Summary":
         average_duration = None
         if duration_col:
             student_df[duration_col] = pd.to_numeric(
-                student_df[duration_col], errors="coerce"
+                student_df[duration_col],
+                errors="coerce",
             )
             average_duration = student_df[duration_col].mean()
 
@@ -795,7 +951,7 @@ elif page == "Student Summary":
                     "session_id": "Session",
                     duration_col: "Presence Duration (seconds)",
                 },
-                color_discrete_sequence=["#A78BFA"],
+                color_discrete_sequence=["#7562A6"],
             )
             style_chart(fig)
             st.plotly_chart(fig, use_container_width=True)
@@ -804,7 +960,9 @@ elif page == "Student Summary":
 
         st.subheader("Participant History")
         st.dataframe(
-            student_df, use_container_width=True, hide_index=True
+            student_df,
+            use_container_width=True,
+            hide_index=True,
         )
 
         st.caption(
@@ -819,6 +977,6 @@ elif page == "Student Summary":
 
 st.divider()
 st.caption(
-    "NeuraClass • Classroom analytics prototype • "
+    "LearnMate • Classroom analytics prototype • "
     "Demo data is illustrative; live data depends on backend availability."
 )
