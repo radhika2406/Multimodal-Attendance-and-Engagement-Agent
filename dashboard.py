@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-API_URL = "http://127.0.0.1:8000"
+API_URL = "https://multimodal-attendance-and-engagement.onrender.com"
 LOG_DIR = Path("attendance_logs")
 REAL_CSV = LOG_DIR / "attendance_log.csv"
 DEMO_CSV = LOG_DIR / "demo_attendance.csv"
