@@ -7,7 +7,15 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 
+import time
+import cv2
 
+from streamlit_webrtc import (
+    VideoProcessorBase,
+    WebRtcMode,
+    RTCConfiguration,
+    webrtc_streamer,
+)
 # =========================================================
 # CONFIGURATION
 # =========================================================
@@ -26,6 +34,42 @@ DEMO_CSV = LOG_DIR / "demo_attendance.csv"
 
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+class AttendanceVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.last_sent = 0.0
+        self.last_error = None
+
+    def recv(self, frame):
+        now = time.monotonic()
+
+        # Send approximately two frames per second.
+        if now - self.last_sent >= 0.5:
+            self.last_sent = now
+
+            image = frame.to_ndarray(format="bgr24")
+            success, encoded = cv2.imencode(
+                ".jpg",
+                image,
+                [cv2.IMWRITE_JPEG_QUALITY, 70],
+            )
+
+            if success:
+                try:
+                    response = requests.post(
+                        f"{API_URL}/attendance/frame",
+                        data=encoded.tobytes(),
+                        headers={
+                            "Content-Type": "image/jpeg"
+                        },
+                        timeout=5,
+                    )
+                    response.raise_for_status()
+                    self.last_error = None
+
+                except requests.RequestException as exc:
+                    self.last_error = str(exc)
+
+        return frame
 # Palette
 VIOLET = "#6366F1"
 CYAN = "#2DD4BF"
@@ -556,7 +600,14 @@ table.tbl .na { color: #475569; }
 # LOAD DATA
 # =========================================================
 
-real_history = load_real_history()
+try:
+    history_result = api_get("/attendance/history")
+    real_history = pd.DataFrame(
+        history_result.get("records", [])
+    )
+except requests.RequestException:
+    real_history = load_real_history()
+
 demo_history = load_demo_history()
 
 using_demo = real_history.empty
@@ -758,7 +809,29 @@ if page == "Overview":
 
 elif page == "Live Attendance":
     section("Live Attendance", "Use the sidebar to start/stop, then refresh for the latest records")
+    st.info(
+        "First click Start Attendance in the sidebar. "
+        "Then enable the browser camera below. "
+        "Keep this page open while attendance is running."
+    )
 
+    webrtc_context = webrtc_streamer(
+        key="attendance-browser-camera",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=RTCConfiguration(
+            {
+                "iceServers": [
+                    {"urls": ["stun:stun.l.google.com:19302"]}
+                ]
+            }
+        ),
+        media_stream_constraints={
+            "video": True,
+            "audio": False,
+        },
+        video_processor_factory=AttendanceVideoProcessor,
+        async_processing=True,
+    )
     if not backend_ok:
         banner("Backend is unavailable. Start FastAPI first.", "warn")
         if backend_error:

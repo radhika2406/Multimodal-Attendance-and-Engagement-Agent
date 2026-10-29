@@ -5,7 +5,7 @@ opencv-python==4.10.0.84
 librosa
 numpy
 soundfile
-streamlit
 pandas
 requests
 plotly
+streamlit-webrtc
